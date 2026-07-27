@@ -1,65 +1,68 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState, use } from "react";
+import { useSearchParams } from "next/navigation";
+import { TodoListManager } from "@/components/todomanager";
+import { decompressTodos } from "@/lib/encoding";
+import { Todo } from "@/components/todo";
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const [initialData, setInitialData] = useState<Todo[] | null>(null);
+  const [initialListName, setInitialListName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const dataParam = searchParams.get("data");
+    const nameParam = searchParams.get("list");
+
+    if (dataParam) {
+      const decoded = decompressTodos(dataParam);
+      if (decoded) {
+        setInitialData(decoded);
+        setInitialListName(nameParam || "Shared List");
+      }
+    }
+  }, [searchParams]);
+
+  // If we have initial data from the URL, we might want to pass it down
+  // or handle it inside TodoListManager.
+  // Since TodoListManager manages its own localStorage, we can either:
+  // 1. Pre-fill localStorage with this data on load.
+  // 2. Pass it as a prop to override the selected list.
+
+  // Option 1: Auto-save to localStorage and select it
+  useEffect(() => {
+    if (initialData && initialListName) {
+      // Check if this list already exists in localStorage to avoid duplicates
+      const stored = localStorage.getItem("my-todo-app-lists");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (!parsed[initialListName]) {
+          parsed[initialListName] = initialData;
+          localStorage.setItem("my-todo-app-lists", JSON.stringify(parsed));
+          // Force a reload or update the manager state if needed
+          // For simplicity, we reload the page to let the manager pick it up
+          window.location.reload();
+        }
+      } else {
+        const newList = { [initialListName]: initialData };
+        localStorage.setItem("my-todo-app-lists", JSON.stringify(newList));
+        window.location.reload();
+      }
+    }
+  }, [initialData, initialListName]);
+
+  if (initialData && !initialListName) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading shared list...
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="min-h-screen bg-background py-8 px-4">
+      <TodoListManager />
+    </main>
   );
 }
