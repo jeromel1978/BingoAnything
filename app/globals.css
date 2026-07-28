@@ -126,7 +126,7 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    @apply font-sans sm:text-lg md:text-xl;
     font-family: "Merienda", Courier, monospace;
   }
 }

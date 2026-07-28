@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Pencil, Trash2, Save, X, Plus } from "lucide-react";
 
@@ -11,7 +10,6 @@ import { Pencil, Trash2, Save, X, Plus } from "lucide-react";
 export interface Todo {
   id: string;
   text: string;
-  completed: boolean;
 }
 
 interface TodoListProps {
@@ -25,14 +23,6 @@ export function TodoList({ items, onChange }: TodoListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [newItemText, setNewItemText] = useState("");
-
-  // Handle toggling completion status
-  const toggleComplete = (id: string) => {
-    const updatedItems = items.map((item) =>
-      item.id === id ? { ...item, completed: !item.completed } : item,
-    );
-    onChange(updatedItems);
-  };
 
   // Start editing an item
   const startEdit = (item: Todo) => {
@@ -71,7 +61,6 @@ export function TodoList({ items, onChange }: TodoListProps) {
     const newItem: Todo = {
       id: crypto.randomUUID(),
       text: newItemText,
-      completed: false,
     };
 
     onChange([...items, newItem]);
@@ -79,7 +68,7 @@ export function TodoList({ items, onChange }: TodoListProps) {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-4">
+    <div className="w-full max-w-md mx-auto space-y-4 max-h-full overflow-hidden">
       {/* Add New Item Section */}
       <div className="flex gap-2">
         <Input
@@ -101,7 +90,7 @@ export function TodoList({ items, onChange }: TodoListProps) {
       </div>
 
       {/* List Section */}
-      <div className="space-y-2">
+      <div className="space-y-2 max-h-200 overflow-auto">
         {items.length === 0 && (
           <p className="text-center text-muted-foreground py-4">
             No tasks yet. Add one above!
@@ -111,12 +100,6 @@ export function TodoList({ items, onChange }: TodoListProps) {
         {items.map((item) => (
           <Card key={item.id} className="p-0 overflow-hidden">
             <CardContent className="flex items-center gap-3 p-3">
-              <Checkbox
-                checked={item.completed}
-                onCheckedChange={() => toggleComplete(item.id)}
-                className="h-5 w-5"
-              />
-
               {editingId === item.id ? (
                 // Editing Mode
                 <div className="flex-1 flex items-center gap-2">
@@ -150,15 +133,7 @@ export function TodoList({ items, onChange }: TodoListProps) {
               ) : (
                 // Viewing Mode
                 <div className="flex-1 flex items-center justify-between">
-                  <span
-                    className={`flex-1 ${
-                      item.completed
-                        ? "line-through text-muted-foreground"
-                        : "text-foreground"
-                    }`}
-                  >
-                    {item.text}
-                  </span>
+                  <span>{item.text}</span>
                   <div className="flex gap-1">
                     <Button
                       variant="ghost"
