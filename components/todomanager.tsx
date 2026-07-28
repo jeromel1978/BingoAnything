@@ -30,6 +30,7 @@ import {
   AccordionItem,
   AccordionContent,
 } from "./ui/accordion";
+import Coffee from "@/components/buymeacoffee";
 
 interface TodoListsData {
   [listName: string]: Todo[];
@@ -417,6 +418,9 @@ export default function TodoListManager({
           </div>
         </div>
       </div>
+      <footer>
+        <Coffee />
+      </footer>
     </div>
   );
 }
