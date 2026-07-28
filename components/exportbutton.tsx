@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Share2, Check, Loader2 } from "lucide-react";
 import { Todo } from "@/components/todo";
-import { compressTodos } from "@/lib/encoding";
+import { saveRecord } from "@/actions/redis";
 
 interface ShareBingoButtonProps {
   todos: Todo[];
@@ -23,14 +23,23 @@ export function ShareBingoButton({ todos, listName }: ShareBingoButtonProps) {
 
     setLoading(true);
     try {
-      // 1. Compress the data
-      const compressed = compressTodos(todos);
+      // Create an object with both data and name
+      const shareObject = {
+        data: todos,
+        name: listName,
+      };
 
-      // 2. Update URL parameters
-      // We use a new URLSearchParams to avoid mutating the existing ones incorrectly
+      // 1. Save to Redis instead of localStorage
+      const storedRecord = await saveRecord<{ data: Todo[]; name: string }>(
+        shareObject,
+      );
+
+      // 2. Update URL parameter with the Redis ID (6-character NanoID)
       const params = new URLSearchParams(searchParams.toString());
-      params.set("data", compressed);
-      params.set("list", listName); // Optional: Store the name too
+      params.set("data", storedRecord.id); // Use the Redis ID instead of compressed data
+
+      // Remove the old list parameter if it exists
+      params.delete("list");
 
       // Replace the URL without reloading
       const newUrl = `${window.location.pathname}?${params.toString()}`;

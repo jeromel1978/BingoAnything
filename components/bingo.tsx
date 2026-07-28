@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, RefreshCw, Check, X } from "lucide-react";
 import { Todo } from "@/components/todo"; // Assuming Todo type is exported from your previous file
+import { toast } from "sonner";
 
 interface BingoCardProps {
   items: Todo[];
@@ -126,6 +127,17 @@ export function BingoCard({ items, onBack }: BingoCardProps) {
   };
 
   const hasBingo = checkBingo();
+
+  // Show toast when bingo is achieved
+  useEffect(() => {
+    if (hasBingo) {
+      toast.success("BINGO!", {
+        description: "Congratulations! You have a Bingo!",
+        duration: 5000,
+        position: "top-center",
+      });
+    }
+  }, [hasBingo]);
 
   if (items.length < MIN_ITEMS_REQUIRED) {
     return (
