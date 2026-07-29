@@ -14,6 +14,7 @@ export default async function Page({ params }: PageProps) {
     const storedData = await loadRecord<{ data: Todo[]; name: string }>(ID);
 
     if (!storedData) {
+      console.log("Not Found", storedData);
       notFound();
     }
 

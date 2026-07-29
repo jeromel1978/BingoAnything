@@ -42,11 +42,11 @@ export function ShareBingoButton({ todos, listName }: ShareBingoButtonProps) {
       params.delete("list");
 
       // Replace the URL without reloading
-      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      const newUrl = `${window.location.origin}/${storedRecord.id}`;
       window.history.pushState({}, "", newUrl);
 
       // 3. Copy to clipboard
-      const fullUrl = window.location.origin + newUrl;
+      const fullUrl = `${window.location.origin}/${storedRecord.id}`;
       await navigator.clipboard.writeText(fullUrl);
 
       setCopied(true);
